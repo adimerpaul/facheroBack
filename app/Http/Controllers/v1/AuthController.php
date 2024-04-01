@@ -1318,14 +1318,11 @@ class AuthController extends Controller
     }
 
     public function sendVerificationOnMail(Request $request){
-        error_log('sendVerificationOnMail'.json_encode($request->all()));
-        error_log('1');
         $validator = Validator::make($request->all(), [
             'email' => 'required',
             'country_code'=>'required',
             'mobile'=>'required'
         ]);
-        error_log('2');
         if ($validator->fails()) {
             $response = [
                 'success' => false,
@@ -1334,27 +1331,22 @@ class AuthController extends Controller
             ];
             return response()->json($response, 404);
         }
-        error_log('3');
 
         $data = User::where('email',$request->email)->first();
         $matchThese = ['country_code' => $request->country_code, 'mobile' => $request->mobile];
         $data2 = User::where($matchThese)->first();
-        error_log('4');
         if (is_null($data) && is_null($data2)) {
-            error_log('5');
             $settings = Settings::take(1)->first();
             $generalInfo = Settings::take(1)->first();
             $mail = $request->email;
             $username = $request->email;
             $subject = $request->subject;
-            error_log('6');
             $otp = random_int(100000, 999999);
             $savedOTP = Otp::create([
                 'otp'=>$otp,
                 'email'=>$request->email,
                 'status'=>0,
             ]);
-            error_log('7');
             $mailTo = Mail::send('mails/register',
                 [
                     'app_name'      =>$generalInfo->name,
@@ -1365,8 +1357,6 @@ class AuthController extends Controller
                 ->subject($subject);
                 $message->from($generalInfo->email,$generalInfo->name);
             });
-            error_log('mailTo'.json_encode($mailTo));
-            error_log('8');
             $response = [
                 'data'=>true,
                 'mail'=>$mailTo,
@@ -1374,7 +1364,6 @@ class AuthController extends Controller
                 'success' => true,
                 'status' => 200,
             ];
-            error_log('9');
             return response()->json($response, 200);
         }
 
